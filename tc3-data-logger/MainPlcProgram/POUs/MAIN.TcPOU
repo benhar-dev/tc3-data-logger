@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="MAIN" Id="{b0e54dca-c4a4-474e-8a8e-b46682f13b27}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[{IF hasattribute (GVL_RealTimeLogging,'enabled')}
+	// if you add the TC3_RealtimeMonitoring library then the project will automatically switch to Performance test. 
+	PerformanceTest();
+{ELSE}
+	ExampleApplication();
+{END_IF}]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="900" Count="0" />
+      <LineId Id="924" Count="0" />
+      <LineId Id="914" Count="0" />
+      <LineId Id="917" Count="1" />
+      <LineId Id="912" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="PerformanceTest" Id="{2d7f3fdc-1ec7-4827-ae4b-3fe65b9c856d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PerformanceTest
+VAR
+
+	// application
+	fileName : STRING := 'C:\myLog.csv';
+	targetLogCount : UDINT := 10000; // how many records will be record in the logging session.
+	loggingState: (IDLE, INITIALISE, CREATE_HEADER, CYCLIC_LOG_VALUES, COMPLETE_LOGGING) := IDLE;
+	maxiumumBufferUsage : UDINT; // you must check this value to make sure it does not exceed GVL_ByteBufferConstants.FILE_WRITE_BUFFER_SIZE
+	
+	{attribute 'hidden'}
+	fileBasedByteBuffer : FileBasedByteBuffer;
+	{attribute 'hidden'}
+	csvDocumentWriter : CsvByteDocumentWriter(FileBasedByteBuffer);
+	{attribute 'hidden'}
+	xfcChannel: INT;
+
+	// example data
+	SensorName : STRING := 'Sensor1';
+	SerialNumber : INT := 123;
+	SensorActive : BOOL;
+	SensorValue : ARRAY [0..49] OF INT := [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
+	
+	bDutDefined: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//  Set logging state to INITIALISE to run the example code. 
+// --------------------------------------------------------------------------------------------------------------------------------------
+{IF hasattribute (GVL_RealTimeLogging,'enabled')}
+	rtLog.LogSequenceStop(3,3);
+{END_IF}
+
+CASE loggingState OF
+		
+	IDLE: 
+		// The code will wait here.  You must manually set the loggingState to INITIALISE using the online write values.
+	
+	INITIALISE:
+	
+		maxiumumBufferUsage := 0; // this example tracks the maximum buffer usage.  The default buffer size is 200KB.
+		
+		// The csv document requires a buffer to save the data to.  
+		// Therefore before starting to write csv records we must enable the buffer by calling start, plus the file name. 
+		
+		IF fileBasedByteBuffer.Start(fileName) THEN
+			loggingState := CREATE_HEADER;
+		END_IF
+		
+	CREATE_HEADER: 
+		
+		// This section creates your header information.
+		// The information will be stored as bytes.  This example also shows the conversion of an int to string. 
+		csvDocumentWriter
+			.StartRecord()
+			.AddStringLiteral('Sensor Name')
+			.AddString(SensorName)
+			.EndRecord();	
+		csvDocumentWriter
+			.StartRecord()
+			.AddStringLiteral('Sensor Serial Number')
+			.AddStringLiteral(INT_TO_STRING(SerialNumber))
+			.EndRecord();
+		csvDocumentWriter
+			.StartRecord()
+			.AddStringLiteral('Column 1')
+			.AddStringLiteral('Column 2')
+			.AddStringLiteral('Column 3')
+			.AddStringLiteral('Column 4')
+			.AddInt(SerialNumber)
+			.EndRecord();
+
+		loggingState := CYCLIC_LOG_VALUES;
+				
+	CYCLIC_LOG_VALUES:
+			
+		// This is the logging section of the code.  You can either make a single record per cycle, or 
+		// record multiples based on the array given by our XFC terminals.  In this example I save 50 XFC values plus a few other details
+		// Remember, the data is stored as binary.  Use xxx_TO_STRING converters to provide strings. 
+		FOR xfcChannel := 0 TO 49 DO   
+				csvDocumentWriter
+					.StartRecord()
+					.AddBool(SensorActive)
+					.AddBoolLiteral(TRUE)
+					.AddInt(SensorValue[xfcChannel]) 
+					.AddIntLiteral(0)
+					.EndRecord();
+					
+		END_FOR
+		
+		// This controls how many records are written.  You can either use a timer countdown or a record count.  
+		// in this example I check the records created and once I have over 300 (including the header) then I complete.
+		IF csvDocumentWriter.RecordCount > targetLogCount THEN
+			loggingState := COMPLETE_LOGGING;
+		END_IF
+		
+	COMPLETE_LOGGING: 
+		
+		// You must stop the file based buffer to close and release the file.  Once the buffer has stopped we can then finish
+		// by resetting the csvDocument.  This resets the internal counters.
+		fileBasedByteBuffer.Stop();
+		
+		IF fileBasedByteBuffer.IsStopped THEN
+			csvDocumentWriter.Reset();
+			loggingState := IDLE;
+		END_IF
+
+	
+END_CASE
+
+// You must cyclic call this fileBasedByteBuffer to give it procesing time.  There is no requirement to call the csvDocumentWriter as this is 
+// all event based. 
+fileBasedByteBuffer();
+
+// maxiumumBufferUsage must remain under GVL_ByteBufferConstants.FILE_WRITE_BUFFER_SIZE.  If it exceeds then you will drop values.  In this instance
+// make GVL_ByteBufferConstants.FILE_WRITE_BUFFER_SIZE larger. 
+IF fileBasedByteBuffer.Size > maxiumumBufferUsage THEN
+	maxiumumBufferUsage := fileBasedByteBuffer.Size;
+END_IF
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PerformanceTest">
+      <LineId Id="663" Count="0" />
+      <LineId Id="666" Count="0" />
+      <LineId Id="900" Count="0" />
+      <LineId Id="914" Count="0" />
+      <LineId Id="912" Count="0" />
+      <LineId Id="667" Count="0" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="496" Count="1" />
+      <LineId Id="672" Count="0" />
+      <LineId Id="552" Count="0" />
+      <LineId Id="554" Count="0" />
+      <LineId Id="625" Count="0" />
+      <LineId Id="847" Count="1" />
+      <LineId Id="626" Count="0" />
+      <LineId Id="628" Count="0" />
+      <LineId Id="555" Count="1" />
+      <LineId Id="553" Count="0" />
+      <LineId Id="557" Count="0" />
+      <LineId Id="677" Count="0" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="662" Count="0" />
+      <LineId Id="624" Count="0" />
+      <LineId Id="849" Count="0" />
+      <LineId Id="859" Count="4" />
+      <LineId Id="375" Count="3" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="865" Count="3" />
+      <LineId Id="870" Count="1" />
+      <LineId Id="869" Count="0" />
+      <LineId Id="864" Count="0" />
+      <LineId Id="391" Count="1" />
+      <LineId Id="675" Count="0" />
+      <LineId Id="590" Count="0" />
+      <LineId Id="681" Count="0" />
+      <LineId Id="591" Count="0" />
+      <LineId Id="632" Count="0" />
+      <LineId Id="876" Count="0" />
+      <LineId Id="593" Count="1" />
+      <LineId Id="393" Count="0" />
+      <LineId Id="874" Count="1" />
+      <LineId Id="615" Count="0" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="400" Count="1" />
+      <LineId Id="458" Count="0" />
+      <LineId Id="461" Count="0" />
+      <LineId Id="634" Count="0" />
+      <LineId Id="636" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="368" Count="0" />
+      <LineId Id="521" Count="0" />
+      <LineId Id="544" Count="1" />
+      <LineId Id="685" Count="0" />
+      <LineId Id="638" Count="1" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="608" Count="2" />
+      <LineId Id="612" Count="0" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="688" Count="0" />
+      <LineId Id="81" Count="1" />
+      <LineId Id="640" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="641" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="823" Count="0" />
+      <LineId Id="822" Count="0" />
+      <LineId Id="824" Count="0" />
+      <LineId Id="717" Count="0" />
+      <LineId Id="720" Count="1" />
+      <LineId Id="821" Count="0" />
+      <LineId Id="820" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <GVL Name="GVL_RealtimeLogging" Id="{1a306935-f4a7-4d87-aeab-c920e83ab89d}">
+    <Declaration><![CDATA[VAR_GLOBAL
+// to enable realtime performance testing, add the TC3_RealtimeMonitoring library to the project
+{IF defined (TYPE: FB_RTMon_LogMark)}
+    
+	rtLog : FB_RTMon_LogMark;
+	
+	{attribute 'loggingEnabled'}
+	{attribute 'loggingByteBuffer'}
+	
+{END_IF}
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="FileBasedByteBuffer" Id="{fd1e91c2-96b3-4851-9be2-08b665937ee6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FileBasedByteBuffer IMPLEMENTS I_Buffer
+VAR
+	
+	fileName : STRING;
+	state: (IDLE, START_WRITING, INITIALISE, CYCLIC_WRITE, CLOSE) := IDLE;
+	binaryFileWriter : ByteBufferFileWriter('');
+		
+	buffer1 : ARRAY [0..GVL_ByteBufferConstants.FILE_WRITE_BUFFER_SIZE] OF BYTE;
+	buffer2 : ARRAY [0..GVL_ByteBufferConstants.FILE_WRITE_BUFFER_SIZE] OF BYTE;
+	byteBuffer1 : ByteBuffer(ADR(buffer1),SIZEOF(buffer1));
+	byteBuffer2 : ByteBuffer(ADR(buffer2),SIZEOF(buffer2));
+	
+	currentlySavingBuffer : I_Buffer := byteBuffer2;
+	standbyBuffer : I_Buffer := byteBuffer2;
+	activeBuffer : I_Buffer := byteBuffer1;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE state OF
+		
+	IDLE: //
+	
+	START_WRITING: 
+	
+		byteBuffer1.Reset();
+		byteBuffer2.Reset();
+		
+		activeBuffer := byteBuffer1;
+		standbyBuffer := byteBuffer2;
+		currentlySavingBuffer := standbyBuffer;
+		
+		binaryFileWriter.OpenFile(fileName);
+		state := CYCLIC_WRITE;
+		
+	CYCLIC_WRITE: //
+		
+	CLOSE: 
+	
+		IF activeBuffer.Size = 0 AND standbyBuffer.Size = 0 THEN
+			IF binaryFileWriter.CloseFile() THEN 
+				state := IDLE;
+			END_IF
+		END_IF
+	
+END_CASE
+
+binaryFileWriter();
+
+IF binaryFileWriter.WriteComplete THEN
+	currentlySavingBuffer.Reset();
+END_IF
+
+IF standbyBuffer.Size = 0 THEN
+	IF binaryFileWriter.WriteByteBufferToFile(activeBuffer) THEN
+		currentlySavingBuffer := activeBuffer;
+		activeBuffer := standbyBuffer;
+		standbyBuffer := currentlySavingBuffer;
+	END_IF
+END_IF
+
+]]></ST>
+    </Implementation>
+    <Method Name="AddBoolAsStringToBuffer" Id="{053c615f-58c6-4be8-99c9-1367be6fc001}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolAsStringToBuffer : BOOL
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddBoolAsStringToBuffer := activeBuffer.AddBoolAsStringToBuffer(Field);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddBoolToBuffer" Id="{b97dca57-dc88-4275-b896-2c93500eacb5}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolToBuffer : BOOL
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddBoolToBuffer := activeBuffer.AddBoolToBuffer(Field);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddCharToBuffer" Id="{abbadc54-ab7d-4cdd-a01c-7a6150c9e78b}">
+      <Declaration><![CDATA[METHOD PUBLIC AddCharToBuffer : BOOL
+VAR_IN_OUT
+	Field : BYTE;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddCharToBuffer := activeBuffer.AddCharToBuffer(Field);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddIntToBuffer" Id="{22daea51-e3a6-44fb-927e-bfe128106c4d}">
+      <Declaration><![CDATA[METHOD PUBLIC AddIntToBuffer : BOOL
+VAR_IN_OUT
+	Field : INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddIntToBuffer := activeBuffer.AddIntToBuffer(Field);]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Address" Id="{4d29680e-eb35-4d46-9e04-dec0dcc8a1ce}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Address : pointer to byte]]></Declaration>
+      <Get Name="Get" Id="{05fd5825-3c51-43b6-8acb-b3f5e57abcd1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Address := activeBuffer.Address;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="AddStringToBuffer" Id="{14795828-7035-49b9-a533-783abaf0e2a8}">
+      <Declaration><![CDATA[METHOD PUBLIC AddStringToBuffer : BOOL
+VAR_IN_OUT
+	stringToWrite : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddStringToBuffer := activeBuffer.AddStringToBuffer(stringToWrite);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddULintToBuffer" Id="{c7e860a8-9436-4671-81a4-e24553a29e77}">
+      <Declaration><![CDATA[METHOD AddULintToBuffer : BOOL
+VAR_IN_OUT
+	Field	: ULINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddULintToBuffer := activeBuffer.AddULintToBuffer(Field);]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="IsActive" Id="{e3523571-9469-4ad4-93c1-782fe8ab88ef}">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsActive : BOOL]]></Declaration>
+      <Get Name="Get" Id="{db4f71f0-98ea-4e81-a7fe-50180cc1d8c6}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IsActive := state = CYCLIC_WRITE;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="IsStopped" Id="{bf6af49b-19cf-4f33-ad0d-85437c531d29}">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsStopped : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7e61e412-a2da-4323-8e85-feebe10450fd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IsStopped := state = IDLE;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Remaining" Id="{268fc45e-1b26-4c9a-8f5d-e6eac4b9d8b6}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Remaining : UDINT]]></Declaration>
+      <Get Name="Get" Id="{27c1fb4d-b9b2-4d9e-8e19-60c793458ef8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Remaining := activeBuffer.Remaining;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{48a32e79-a26c-47a5-ab47-fd7f2dd067be}">
+      <Declaration><![CDATA[METHOD Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[activeBuffer.Reset();]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Size" Id="{41868a1a-854c-4fc4-9a99-65a01352797c}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Size : udint]]></Declaration>
+      <Get Name="Get" Id="{cbfd5190-ee38-4a3c-b56c-2a2c94733cd7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Size := activeBuffer.Size;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Start" Id="{011f7e44-5747-47a2-8dfe-0eb0e68b9580}">
+      <Declaration><![CDATA[METHOD PUBLIC Start : BOOL
+VAR_INPUT
+	fileName : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF State = IDLE THEN
+	THIS^.fileName := fileName;
+	State := START_WRITING;
+	Start := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Stop" Id="{20754d56-1d9d-40df-9eb2-0c386c403ad6}">
+      <Declaration><![CDATA[METHOD PUBLIC Stop : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF State = CYCLIC_WRITE THEN
+	State := CLOSE;
+	Stop := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FileBasedByteBuffer">
+      <LineId Id="25" Count="1" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="174" Count="1" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="189" Count="2" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="69" Count="5" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="75" Count="2" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="79" Count="5" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="200" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="89" Count="2" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.AddBoolAsStringToBuffer">
+      <LineId Id="77" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.AddBoolToBuffer">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.AddCharToBuffer">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.AddIntToBuffer">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.Address.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.AddStringToBuffer">
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.AddULintToBuffer">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.IsActive.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.IsStopped.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.Remaining.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.Reset">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.Size.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.Start">
+      <LineId Id="23" Count="3" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FileBasedByteBuffer.Stop">
+      <LineId Id="6" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="ByteBufferFileWriter" Id="{974330a0-7c08-4b2f-b77a-a168cef059fe}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK ByteBufferFileWriter
+VAR
+	state : (IDLE, OPEN, OPENING, OPENED, WRITE, WRITING, WRITTEN, CLOSE, CLOSING, CLOSED, ERROR) := IDLE;
+	netId : T_AmsNetId := '';	
+	fileName : T_MaxString := '';
+	errId : UDINT;
+	hFile : UINT := 0;
+	byteBuffer : I_Buffer;
+	fbFileOpen : FB_FileOpen;
+	fbFileClose : FB_FileClose;
+	fbFileWrite : FB_FileWrite;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE state OF
+	IDLE: //
+
+	OPEN:
+	
+		errId := 0;
+		fbFileOpen(bExecute := FALSE);
+		fbFileOpen( 
+			sNetId := netId, 
+			sPathName := fileName, 
+			nMode := FOPEN_MODEWRITE OR FOPEN_MODEBINARY, 
+			ePath := PATH_GENERIC, 
+			bExecute := TRUE 
+		);
+			
+		state := OPENING;
+
+	OPENING:
+	
+		fbFileOpen( 
+			bExecute := FALSE,
+			hFile => hFile 
+		);
+		
+		IF NOT fbFileOpen.bBusy THEN
+			IF NOT fbFileOpen.bError THEN
+				state := OPENED;
+			ELSE
+				state := ERROR;
+				errId := fbFileOpen.nErrId;
+			END_IF
+		END_IF
+
+	OPENED: //
+
+	WRITE:	
+	
+		fbFileWrite(bExecute := FALSE );
+		fbFileWrite( 
+			sNetId := netId, 
+			hFile := hFile, 
+			pWriteBuff := byteBuffer.Address, 
+			cbWriteLen := byteBuffer.Size, 
+			bExecute := TRUE 
+		);
+		state := WRITING;
+
+	WRITING:
+
+		fbFileWrite( 
+			bExecute := FALSE
+		);
+		
+		IF NOT fbFileWrite.bBusy THEN
+			IF NOT fbFileWrite.bError THEN
+				state := WRITTEN;
+			ELSE
+				state := ERROR;
+				errId := fbFileWrite.nErrId;
+			END_IF
+		END_IF
+
+	WRITTEN: state := OPENED;
+	
+	CLOSE:	
+	
+		fbFileClose(bExecute := FALSE);
+		fbFileClose( 
+			sNetId := netId, 
+			hFile := hFile, 
+			bExecute := TRUE 
+		);
+		state := CLOSING;
+
+	CLOSING:
+	
+		fbFileClose( 
+			bExecute := FALSE
+		);
+		
+		IF ( NOT fbFileClose.bBusy ) THEN
+			hFile := 0;
+			state := CLOSED;
+		END_IF
+
+	CLOSED: state := IDLE;
+	
+	ERROR:
+		
+		IF ( hFile <> 0 ) THEN
+			state := CLOSE; 
+		ELSE
+			state := IDLE;
+		END_IF
+
+END_CASE
+
+
+
+]]></ST>
+    </Implementation>
+    <Method Name="CloseFile" Id="{1e9eada9-7a1e-48f9-a23e-4ca727eb0055}">
+      <Declaration><![CDATA[METHOD PUBLIC CloseFile : BOOL]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF state = OPENED THEN
+	state := CLOSE;
+	CloseFile := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{d86f9bb2-8e65-4992-832b-c69498cbf4bf}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	NetId : T_AmsNetId; // Leave blank for local
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[this^.netId := NetId;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="IsBusy" Id="{adf99bea-4af0-48c3-88aa-39b232ec5c96}">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsBusy : BOOL]]></Declaration>
+      <Get Name="Get" Id="{bdbeb253-5353-46af-be39-7f4024c85203}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IsBusy := NOT (state = IDLE OR state = OPENED);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="IsClosed" Id="{53110810-2495-4881-9bd3-64111837d44a}">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsClosed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c9f4dd2f-ba5c-4d7b-8562-cfdd8ad65252}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IsClosed := (state = IDLE);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="IsOpen" Id="{b162d915-0c49-4a6e-8da9-aa6208295a34}">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsOpen : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fbeae986-de40-45e8-aa23-da8880829ab0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IsOpen := not IsClosed and not (state = OPENING or state = OPEN);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="OpenFile" Id="{d656c749-7bb1-4d56-ab15-9a5e6a25769b}">
+      <Declaration><![CDATA[METHOD PUBLIC OpenFile : BOOL
+VAR_INPUT
+	FileName : T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FileName = '' THEN
+	RETURN;
+END_IF
+
+IF state = IDLE THEN
+	THIS^.fileName := FileName;
+	state := OPEN;
+	OpenFile := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="WriteByteBufferToFile" Id="{b1b948ae-968f-414b-b01d-51099a4dd98f}">
+      <Declaration><![CDATA[METHOD PUBLIC WriteByteBufferToFile : BOOL
+VAR_INPUT
+	buffer : I_Buffer;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF buffer = 0 THEN
+	RETURN;
+END_IF
+
+IF buffer.Size = 0 THEN
+	RETURN;
+END_IF
+
+IF state = OPENED THEN
+	THIS^.byteBuffer := buffer;
+	state := WRITE;
+	WriteByteBufferToFile := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="WriteComplete" Id="{c19a5449-807d-44cb-87c1-322474441acc}">
+      <Declaration><![CDATA[PROPERTY PUBLIC WriteComplete : BOOL]]></Declaration>
+      <Get Name="Get" Id="{0053eaca-b4ff-4762-b1c1-8d788f325f46}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[WriteComplete := state = WRITTEN;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="ByteBufferFileWriter">
+      <LineId Id="3" Count="1" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="20" Count="2" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="191" Count="0" />
+      <LineId Id="194" Count="2" />
+      <LineId Id="24" Count="4" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="29" Count="2" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="80" Count="1" />
+      <LineId Id="200" Count="0" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="201" Count="5" />
+      <LineId Id="84" Count="2" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="209" Count="0" />
+      <LineId Id="211" Count="1" />
+      <LineId Id="88" Count="4" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="97" Count="1" />
+      <LineId Id="216" Count="3" />
+      <LineId Id="99" Count="2" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="225" Count="1" />
+      <LineId Id="103" Count="3" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="109" Count="2" />
+      <LineId Id="113" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.CloseFile">
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.IsBusy.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.IsClosed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.IsOpen.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.OpenFile">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.WriteByteBufferToFile">
+      <LineId Id="75" Count="2" />
+      <LineId Id="90" Count="3" />
+      <LineId Id="78" Count="2" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBufferFileWriter.WriteComplete.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

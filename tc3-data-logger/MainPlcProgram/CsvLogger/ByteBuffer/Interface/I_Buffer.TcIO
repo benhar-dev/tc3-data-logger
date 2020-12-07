@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <Itf Name="I_Buffer" Id="{a46e027c-b59f-4048-ba72-316600fb30cf}">
+    <Declaration><![CDATA[INTERFACE I_Buffer
+]]></Declaration>
+    <Method Name="AddBoolAsStringToBuffer" Id="{096ea807-7264-4829-8669-96c9d6d2d4da}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolAsStringToBuffer : BOOL
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddBoolToBuffer" Id="{2032921c-77a0-4aa2-926f-447e313d4d2f}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolToBuffer : BOOL
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddCharToBuffer" Id="{517abd56-d064-484c-8e06-2f478e2f2a2b}">
+      <Declaration><![CDATA[METHOD PUBLIC AddCharToBuffer : BOOL
+VAR_IN_OUT
+	Field : BYTE;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddIntToBuffer" Id="{5e75034d-6a8e-4e72-9265-4592ee21e5e6}">
+      <Declaration><![CDATA[METHOD PUBLIC AddIntToBuffer : BOOL
+VAR_IN_OUT
+	Field : INT;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="Address" Id="{1018826a-53b3-435e-af3b-b951c8082e17}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Address : pointer to byte]]></Declaration>
+      <Get Name="Get" Id="{8ef1a317-5e5c-4f93-8547-9477b1ec89ca}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="AddStringToBuffer" Id="{fdf261d3-4fb8-4539-9669-8d6973365199}">
+      <Declaration><![CDATA[METHOD PUBLIC AddStringToBuffer : BOOL
+VAR_IN_OUT
+	stringToWrite : STRING;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddULintToBuffer" Id="{60ba2e4e-67a4-413e-90d0-828400df7032}">
+      <Declaration><![CDATA[METHOD PUBLIC AddULintToBuffer : BOOL
+VAR_IN_OUT
+	Field : ULINT;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="Remaining" Id="{51976bac-1c73-455d-9d13-5f6a145cfdbd}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Remaining : UDINT]]></Declaration>
+      <Get Name="Get" Id="{d833f280-7cad-4fb1-8799-1d0dbf6336fc}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{3a9c018b-f330-480e-a1f7-b2021699d94d}">
+      <Declaration><![CDATA[METHOD PUBLIC Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="Size" Id="{448d67bc-2684-4bc4-a1be-06f4464b05b1}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Size : udint]]></Declaration>
+      <Get Name="Get" Id="{0f0edbe3-5060-40e3-a44b-17afbeaf483d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

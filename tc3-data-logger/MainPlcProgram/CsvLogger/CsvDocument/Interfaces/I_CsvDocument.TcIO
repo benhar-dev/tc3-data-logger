@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <Itf Name="I_CsvDocument" Id="{89d432e3-97f2-436f-98d7-3341ad0aafb2}">
+    <Declaration><![CDATA[INTERFACE I_CsvDocument
+]]></Declaration>
+    <Property Name="FieldCount" Id="{6ffeef19-ba90-40e6-8c9e-de0cf06c8e8c}">
+      <Declaration><![CDATA[PROPERTY PUBLIC FieldCount : UDINT]]></Declaration>
+      <Get Name="Get" Id="{4d7d25de-e53a-43b7-8866-89f7a3296e51}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="FieldDivider" Id="{fbc4ba23-554e-4c1a-8c59-cb24c1f19bdf}">
+      <Declaration><![CDATA[PROPERTY PUBLIC FieldDivider : BYTE]]></Declaration>
+      <Get Name="Get" Id="{8eca6f98-25ff-411e-a193-794a6ec15b92}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{6649a98a-ea19-4880-b5e2-1b134b96eac1}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="IsFull" Id="{6fe8bd05-a949-4c43-970c-9f566c5f14b2}">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsFull : BOOL]]></Declaration>
+      <Get Name="Get" Id="{005a6a9c-e489-4d34-a000-ad36e3491786}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="RecordCount" Id="{54bd9b12-d090-4b67-a201-c93b32d7887f}">
+      <Declaration><![CDATA[PROPERTY PUBLIC RecordCount : UDINT]]></Declaration>
+      <Get Name="Get" Id="{bece55ee-9ee5-49f1-b12f-04e92d06d3ac}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{109f614c-3a6a-4422-b65f-ed5e6213305e}">
+      <Declaration><![CDATA[METHOD Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="StartRecord" Id="{9b0f96e1-ca2b-486d-8923-07cbf70a7106}">
+      <Declaration><![CDATA[METHOD PUBLIC StartRecord : reference to CsvByteDocumentWriter//I_CsvRecordWriter
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="UseQuotes" Id="{8d2c3c2b-5ca9-4786-bbf9-af0a79588e09}">
+      <Declaration><![CDATA[PROPERTY PUBLIC UseQuotes : BOOL]]></Declaration>
+      <Get Name="Get" Id="{cf5234c2-b774-479f-9a59-f3b8df8814b6}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{efa3280a-e8d2-4806-9390-c62631bd17a8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

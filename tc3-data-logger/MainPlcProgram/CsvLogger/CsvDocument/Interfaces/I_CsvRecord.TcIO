@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <Itf Name="I_CsvRecord" Id="{1cf65c85-3558-47aa-95ce-584f0e04ec47}">
+    <Declaration><![CDATA[INTERFACE I_CsvRecord
+]]></Declaration>
+    <Method Name="AddBool" Id="{f0cb012e-9de8-466d-99ef-22725ead0ab5}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBool : I_CsvRecord;
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddBoolLiteral" Id="{c7a7eeec-f740-41b7-8d23-13404ae82a63}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolLiteral : I_CsvRecord;
+VAR_INPUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddInt" Id="{4431b41a-890a-48fe-8dc9-dcfb2eb50447}">
+      <Declaration><![CDATA[METHOD PUBLIC AddInt : I_CsvRecord;
+VAR_IN_OUT
+	Field : INT;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddIntLiteral" Id="{69e63846-57ee-4558-bee9-cb0aa24ae9a9}">
+      <Declaration><![CDATA[METHOD PUBLIC AddIntLiteral : I_CsvRecord;
+VAR_INPUT
+	Field : INT;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddString" Id="{8835e7c8-d6a4-42cd-aea4-7b1de23ecf4a}">
+      <Declaration><![CDATA[METHOD PUBLIC AddString : I_CsvRecord;
+VAR_IN_OUT
+	stringToWrite : STRING;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddStringLiteral" Id="{7ff12bef-4cc0-46c1-8e8e-20127120ae2c}">
+      <Declaration><![CDATA[METHOD PUBLIC AddStringLiteral : I_CsvRecord;
+VAR_INPUT
+	stringToWrite : STRING;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddULint" Id="{4076b3ca-c138-4b72-94a0-1e838a7282c1}">
+      <Declaration><![CDATA[METHOD PUBLIC AddULint : I_CsvRecord;
+VAR_IN_OUT
+	Field : ULINT;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="AddULintLiteral" Id="{cf866177-6ef8-484d-aae8-47cf81158d1e}">
+      <Declaration><![CDATA[METHOD PUBLIC AddULintLiteral : I_CsvRecord;
+VAR_INPUT
+	Field : ULINT;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="EndRecord" Id="{c268a2ec-6e00-4508-83fe-0670c137b09a}">
+      <Declaration><![CDATA[METHOD PUBLIC EndRecord : I_CsvDocument;
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

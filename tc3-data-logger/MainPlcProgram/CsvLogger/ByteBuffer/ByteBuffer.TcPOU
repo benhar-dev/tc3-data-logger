@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="ByteBuffer" Id="{ca8ea944-d046-45e5-b155-b381399eb26d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK ByteBuffer implements I_Buffer
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	buffer : POINTER TO BYTE;
+	bufferSize : UDINT;
+	_size : UDINT;
+END_VAR
+VAR CONSTANT
+	SIZE_OF_INT : UDINT := SIZEOF(INT);
+	SIZE_OF_ULINT : UDINT := SIZEOF(ULINT);
+	SIZE_OF_CHAR : UDINT := SIZEOF(BYTE);
+	SIZE_OF_BOOL : UDINT := SIZEOF(BOOL);
+	SIZE_OF_TRUE_AS_STRING : UDINT := 4;
+	SIZE_OF_FALSE_AS_STRING : UDINT := 5;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Constructor" Id="{f0968fc2-fc0d-44fe-be8b-44b75a39c838}" />
+    <Folder Name="Private" Id="{cfd5ed12-5823-4495-915f-12c58331bc17}" />
+    <Method Name="AddBoolAsStringToBuffer" Id="{cedbb438-1d69-478f-b60d-5d6100625c34}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolAsStringToBuffer : BOOL
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR
+VAR 
+	availableAddress: POINTER TO BYTE;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[availableAddress := GetNextAvailableAddress();
+
+IF Field THEN
+	IF Remaining >= 4 THEN
+		memset(availableAddress,16#74,1);
+		memset(availableAddress+1,16#72,1);
+		memset(availableAddress+2,16#75,1);
+		memset(availableAddress+3,16#65,1);
+		UpdateUsedBufferSize(4);
+		AddBoolAsStringToBuffer:=TRUE;
+	END_IF
+ELSE 
+	IF Remaining >= 5 THEN
+		memset(availableAddress,16#66,1);
+		memset(availableAddress+1,16#61,1);
+		memset(availableAddress+2,16#6C,1);
+		memset(availableAddress+3,16#73,1);
+		memset(availableAddress+4,16#65,1);
+		UpdateUsedBufferSize(5);
+		AddBoolAsStringToBuffer:=TRUE;
+	END_IF
+END_IF
+	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddBoolToBuffer" Id="{8dccb7f1-8d67-489f-92f7-a6df0d14b2bb}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolToBuffer : BOOL
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF Remaining >= SIZE_OF_BOOL THEN
+	
+	memcpy(GetNextAvailableAddress(),ADR(Field),SIZE_OF_BOOL);
+	UpdateUsedBufferSize(SIZE_OF_BOOL);
+
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddCharToBuffer" Id="{671128d9-0a34-4dbc-a1ee-cc6932787bd4}">
+      <Declaration><![CDATA[METHOD PUBLIC AddCharToBuffer : BOOL
+VAR_IN_OUT
+	Field : BYTE;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF Remaining >= SIZE_OF_CHAR THEN
+	
+	memcpy(GetNextAvailableAddress(),ADR(Field),SIZE_OF_CHAR);
+	UpdateUsedBufferSize(SIZE_OF_CHAR);
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddIntToBuffer" Id="{315b64f8-72ec-4188-b220-e8c371d2e51f}">
+      <Declaration><![CDATA[METHOD PUBLIC AddIntToBuffer : BOOL
+VAR_IN_OUT
+	Field : INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF Remaining >= SIZE_OF_INT THEN
+	
+	memcpy(GetNextAvailableAddress(),ADR(Field),SIZE_OF_INT);
+	UpdateUsedBufferSize(SIZE_OF_INT);
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Address" Id="{08b65846-8cf4-4a7b-b000-b754fee610e5}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Address : pointer to byte]]></Declaration>
+      <Get Name="Get" Id="{919393ce-229f-4d84-97b7-17b4f026bd88}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Address := buffer;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="AddStringToBuffer" Id="{37fb52de-0739-4426-962e-e6e17dd1c605}">
+      <Declaration><![CDATA[METHOD PUBLIC AddStringToBuffer : BOOL
+VAR_IN_OUT
+	stringToWrite : STRING;
+END_VAR
+VAR
+	sizeInBytes : UDINT;
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[sizeInBytes := INT_TO_UDINT(len(stringToWrite));
+
+IF Remaining >= sizeInBytes THEN
+	
+	memcpy(GetNextAvailableAddress(),ADR(stringToWrite),sizeInBytes);
+	UpdateUsedBufferSize(sizeInBytes);
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddULintToBuffer" Id="{bf889ffa-2947-421c-8776-91fc782d14d4}">
+      <Declaration><![CDATA[METHOD PUBLIC AddULintToBuffer : BOOL
+VAR_IN_OUT
+	Field : ULINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF Remaining >= SIZE_OF_ULINT THEN
+	
+	memcpy(GetNextAvailableAddress(),ADR(Field),SIZE_OF_ULINT);
+	UpdateUsedBufferSize(SIZE_OF_ULINT);
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{cf43c425-3be4-446f-9f8f-57089e465a3e}" FolderPath="Constructor\">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	Buffer : POINTER TO BYTE;
+	BufferSize : UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.buffer := Buffer;
+THIS^.bufferSize := BufferSize;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetNextAvailableAddress" Id="{7769c87c-9b54-413e-a025-6ad3aa9cda6a}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PRIVATE GetNextAvailableAddress : POINTER TO BYTE
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[GetNextAvailableAddress := buffer + _size;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Remaining" Id="{1a1cc13e-747d-42e2-bbcf-b121786faace}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Remaining : UDINT]]></Declaration>
+      <Get Name="Get" Id="{8c896a63-381c-4b8f-8619-2357686d18ab}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Remaining := bufferSize - _size;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{d01948c5-7dcb-4805-8b51-b51999861ba6}">
+      <Declaration><![CDATA[METHOD PUBLIC Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[memset(buffer,16#00,bufferSize);
+_size := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Size" Id="{c5137921-4056-43a5-a079-2e7f36bdcc8b}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Size : udint]]></Declaration>
+      <Get Name="Get" Id="{a40168a9-d629-4640-a880-8cece7683cce}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Size := _size;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="UpdateUsedBufferSize" Id="{017832bc-629a-4cd8-99e8-0fe0fd8dbb32}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PRIVATE UpdateUsedBufferSize : BOOL;
+VAR_INPUT
+	insertFieldSize : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_size := _size + insertFieldSize;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="ByteBuffer">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.AddBoolAsStringToBuffer">
+      <LineId Id="56" Count="2" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="59" Count="3" />
+      <LineId Id="79" Count="1" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="84" Count="4" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="75" Count="2" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.AddBoolToBuffer">
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="48" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="35" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.AddCharToBuffer">
+      <LineId Id="61" Count="4" />
+      <LineId Id="40" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.AddIntToBuffer">
+      <LineId Id="52" Count="4" />
+      <LineId Id="34" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.Address.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.AddStringToBuffer">
+      <LineId Id="46" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="41" Count="4" />
+      <LineId Id="39" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.AddULintToBuffer">
+      <LineId Id="52" Count="4" />
+      <LineId Id="34" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.GetNextAvailableAddress">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.Remaining.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.Reset">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.Size.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="ByteBuffer.UpdateUsedBufferSize">
+      <LineId Id="39" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,424 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
+  <POU Name="CsvByteDocumentWriter" Id="{fb521214-c9d1-42fc-87a9-31391909d3df}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK CsvByteDocumentWriter IMPLEMENTS I_CsvDocument, I_CsvRecord
+VAR
+	
+	byteBuffer : I_Buffer;
+	fieldStyle : (NEW_FIELD,NEXT_FIELD) := NEW_FIELD;
+	_useQuotes : BOOL := TRUE;
+	_fieldCount : UDINT;
+	_recordCount : UDINT;
+	_fieldDivider : BYTE := F_ToASC(';');
+	_recordEnd : STRING := '$0D$0A';
+	quoteMark : BYTE := F_ToASC('"'); 
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Constructor" Id="{bafcd508-3932-4f44-990b-4d1ac49d8171}" />
+    <Folder Name="Private" Id="{e4076296-8d10-4254-90d3-74d8385b5d87}" />
+    <Folder Name="Properties" Id="{52acf36a-f1da-41a8-8b5b-f746b5b3ce15}" />
+    <Method Name="AddBool" Id="{c8324f9f-d703-4093-a9e8-2270acd0312e}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBool : I_CsvRecord;
+VAR_IN_OUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+byteBuffer.AddBoolAsStringToBuffer(Field);
+AfterAddFieldOperations();
+AddBool := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddBoolLiteral" Id="{a0756402-09de-424a-958c-8035b9a49809}">
+      <Declaration><![CDATA[METHOD PUBLIC AddBoolLiteral : I_CsvRecord;
+VAR_INPUT
+	Field : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+byteBuffer.AddBoolAsStringToBuffer(Field);
+AfterAddFieldOperations();
+AddBoolLiteral := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddFieldDividerToBuffer" Id="{d49b5001-57f1-472a-8e22-8cd59cc089ac}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PROTECTED AddFieldDividerToBuffer
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[byteBuffer.AddCharToBuffer(_fieldDivider);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddInt" Id="{7510350b-74c2-4364-9e17-e500b4437411}">
+      <Declaration><![CDATA[METHOD PUBLIC AddInt : I_CsvRecord;
+VAR_IN_OUT
+	Field : INT;
+END_VAR
+VAR
+	stringConversion : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+stringConversion := INT_TO_STRING(Field);
+byteBuffer.AddStringToBuffer(stringConversion);
+AfterAddFieldOperations();
+AddInt := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddIntLiteral" Id="{3db738bd-7aae-4d74-aad9-ac9a7c8578a4}">
+      <Declaration><![CDATA[METHOD PUBLIC AddIntLiteral : I_CsvRecord;
+VAR_INPUT
+	Field : INT;
+END_VAR
+VAR
+	stringConversion : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+stringConversion := INT_TO_STRING(Field);
+byteBuffer.AddStringToBuffer(stringConversion);
+AfterAddFieldOperations();
+AddIntLiteral := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddQuoteToBuffer" Id="{f5432f9a-23a6-456e-a6cc-08c440c62116}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PROTECTED AddQuoteToBuffer
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[byteBuffer.AddCharToBuffer(quoteMark);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddRecordEndCharactersToBuffer" Id="{f52cd7ac-5d45-413a-97f5-50cdf368bceb}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PROTECTED AddRecordEndCharactersToBuffer]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[byteBuffer.AddStringToBuffer(_recordEnd);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddString" Id="{4c39018d-acbd-47f3-88cc-a7906d7184b2}">
+      <Declaration><![CDATA[METHOD PUBLIC AddString : I_CsvRecord;
+VAR_IN_OUT
+	stringToWrite : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+byteBuffer.AddStringToBuffer(stringToWrite);
+AfterAddFieldOperations();
+AddString := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddStringLiteral" Id="{c11fa6cd-5757-42d6-a2c0-d2edee7189d8}">
+      <Declaration><![CDATA[METHOD PUBLIC AddStringLiteral : I_CsvRecord;
+VAR_INPUT
+	stringToWrite : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+byteBuffer.AddStringToBuffer(stringToWrite);
+AfterAddFieldOperations();
+AddStringLiteral := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddULint" Id="{02982d7e-e453-4377-8f35-adafb7ab4fc0}">
+      <Declaration><![CDATA[METHOD AddULint : I_CsvRecord
+VAR_IN_OUT
+	Field	: ULINT;
+END_VAR
+VAR
+	stringConversion : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+stringConversion := ULINT_TO_STRING(Field);
+byteBuffer.AddStringToBuffer(stringConversion);
+AfterAddFieldOperations();
+AddULint := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AddULintLiteral" Id="{83fb0f0e-9941-4b25-907f-0796bb596871}">
+      <Declaration><![CDATA[METHOD AddULintLiteral : I_CsvRecord
+VAR_INPUT
+	Field	: ULINT;
+END_VAR
+VAR
+	stringConversion : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[BeforeAddFieldOperations();
+stringConversion := ULINT_TO_STRING(Field);
+byteBuffer.AddStringToBuffer(stringConversion);
+AfterAddFieldOperations();
+AddULintLiteral := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AfterAddFieldOperations" Id="{3fcf919f-9762-42a6-a5ab-708f62b01355}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PROTECTED AfterAddFieldOperations
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _useQuotes THEN
+	AddQuoteToBuffer();
+END_IF
+
+fieldStyle := NEXT_FIELD;
+_fieldCount := _fieldCount + 1;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="BeforeAddFieldOperations" Id="{5d7fa340-4f23-4e43-8dd7-3dd989c5cf14}" FolderPath="Private\">
+      <Declaration><![CDATA[METHOD PROTECTED BeforeAddFieldOperations
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF fieldStyle = NEXT_FIELD THEN
+	AddFieldDividerToBuffer();
+END_IF
+
+IF _useQuotes THEN
+	AddQuoteToBuffer();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="EndRecord" Id="{810018e0-cf29-4469-a7da-7d5d4ea4cf61}">
+      <Declaration><![CDATA[METHOD PUBLIC EndRecord : I_CsvDocument;
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AddRecordEndCharactersToBuffer();
+_recordCount := _recordCount + 1;
+EndRecord := THIS^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{d76499c9-18f2-4c02-b05f-c94cbda18ab1}" FolderPath="Constructor\">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	ByteBuffer : I_Buffer;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.byteBuffer := ByteBuffer;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="FieldCount" Id="{1ed7f8dd-dbd6-4408-a3e2-f98e86bd24ca}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC FieldCount : UDINT]]></Declaration>
+      <Get Name="Get" Id="{dade60af-6a6e-400a-9a20-142bd25d52e9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[FieldCount := _fieldCount;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="FieldDivider" Id="{644c17bb-67d1-47cc-b79c-c8f2f2ff0fae}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC FieldDivider : BYTE]]></Declaration>
+      <Get Name="Get" Id="{c6af6698-dd5e-49ee-8c9d-d925f47c8ea7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[FieldDivider := _fieldDivider;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ab389e68-2935-4d92-a66f-c6163edb0093}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_fieldDivider := FieldDivider;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="IsFull" Id="{54550429-0f28-4476-aad0-07497278423a}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC IsFull : BOOL]]></Declaration>
+      <Get Name="Get" Id="{8e41b8f6-eda1-4113-a151-f6359a4116d6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IsFull := byteBuffer.Remaining = 0;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="RecordCount" Id="{67502d15-391c-43e7-8ac8-f52f5ff47c1f}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC RecordCount : UDINT]]></Declaration>
+      <Get Name="Get" Id="{984cf197-c40a-4fdd-9fb7-254335d077b0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RecordCount := _recordCount;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{3686be07-a445-4742-b565-e1898ee45ccc}">
+      <Declaration><![CDATA[METHOD Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[byteBuffer.Reset();
+_recordCount := 0;
+_fieldCount := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="StartRecord" Id="{718c1d6a-763a-4544-9e14-58056349b870}">
+      <Declaration><![CDATA[METHOD PUBLIC StartRecord : reference to CsvByteDocumentWriter//I_CsvRecordWriter
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fieldStyle := NEW_FIELD;
+StartRecord ref= this^;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="UpdateBuffer" Id="{db3a0aff-1fe3-4bef-8b1a-1ed869678b8d}">
+      <Declaration><![CDATA[METHOD PUBLIC UpdateBuffer
+VAR_INPUT
+	Buffer : POINTER TO BYTE;
+	BufferSize : UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="UseQuotes" Id="{e7602b62-b756-4a38-91a6-4a6ebb9f5965}" FolderPath="Properties\">
+      <Declaration><![CDATA[PROPERTY PUBLIC UseQuotes : BOOL]]></Declaration>
+      <Get Name="Get" Id="{026a1190-b91d-415a-9c9a-7d1752e97a48}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[UseQuotes := _useQuotes;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{c2133992-63ab-4111-b14c-b2cd0a00681b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_useQuotes := UseQuotes;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="CsvByteDocumentWriter">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddBool">
+      <LineId Id="39" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddBoolLiteral">
+      <LineId Id="39" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddFieldDividerToBuffer">
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddInt">
+      <LineId Id="38" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddIntLiteral">
+      <LineId Id="38" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddQuoteToBuffer">
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddRecordEndCharactersToBuffer">
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddString">
+      <LineId Id="39" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddStringLiteral">
+      <LineId Id="39" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddULint">
+      <LineId Id="8" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AddULintLiteral">
+      <LineId Id="8" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.AfterAddFieldOperations">
+      <LineId Id="19" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.BeforeAddFieldOperations">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="16" Count="2" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.EndRecord">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.FieldCount.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.FieldDivider.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.FieldDivider.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.IsFull.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.RecordCount.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.Reset">
+      <LineId Id="7" Count="0" />
+      <LineId Id="11" Count="1" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.StartRecord">
+      <LineId Id="6" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.UpdateBuffer">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.UseQuotes.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="CsvByteDocumentWriter.UseQuotes.Set">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
